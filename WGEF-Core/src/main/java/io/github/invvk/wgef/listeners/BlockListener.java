@@ -1,8 +1,11 @@
 package io.github.invvk.wgef.listeners;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.event.block.BreakBlockEvent;
 import com.sk89q.worldguard.bukkit.event.block.PlaceBlockEvent;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 import io.github.invvk.wgef.WGEFPlugin;
 import io.github.invvk.wgef.abstraction.WGEFUtils;
 import io.github.invvk.wgef.abstraction.flags.WGEFlags;
@@ -35,7 +38,8 @@ public class BlockListener implements Listener {
                 if (type == Material.AIR)
                     type = event.getEffectiveMaterial();
 
-                ApplicableRegionSet regions = this.plugin.getFork().getRegionContainer().createQuery().getApplicableRegions(block.getLocation());
+                RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+                ApplicableRegionSet regions = query.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
 
                 Set<Material> state = WGEFUtils.queryValue(player, player.getWorld(), regions.getRegions(), WGEFlags.ALLOW_BLOCK_PLACE);
                 if (state != null && state.contains(type)) {
@@ -61,7 +65,9 @@ public class BlockListener implements Listener {
         if (cause instanceof Player player) {
 
             for (Block block : event.getBlocks()) {
-                ApplicableRegionSet regions = this.plugin.getFork().getRegionContainer().createQuery().getApplicableRegions(block.getLocation());
+
+                RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+                ApplicableRegionSet regions = query.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
 
                 Set<Material> state = WGEFUtils.queryValue(player, player.getWorld(), regions.getRegions(), WGEFlags.ALLOW_BLOCK_BREAK);
                 if (state != null && state.contains(block.getType())) {
@@ -84,7 +90,9 @@ public class BlockListener implements Listener {
     public void onBlockDropItem(BlockDropItemEvent event) {
         Player player = event.getPlayer();
 
-        ApplicableRegionSet regions = this.plugin.getFork().getRegionContainer().createQuery().getApplicableRegions(event.getBlock().getLocation());
+
+        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+        ApplicableRegionSet regions = query.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
 
         Set<Material> state = WGEFUtils.queryValue(player, player.getWorld(), regions.getRegions(), WGEFlags.ALLOWED_BLOCK_DROPS);
         if (!event.getItems().removeIf(item -> state != null && !state.contains(item.getItemStack().getType()))) {
